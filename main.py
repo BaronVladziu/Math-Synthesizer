@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import rtmidi
+import queue
 import sys
 import numpy as np
 from synthesizer import Synthesizer
@@ -26,7 +27,6 @@ def midi2freq(midi_nr):
 
 
 def callback(outdata, frames, time, status):
-    assert frames == args.blocksize
     if status.output_underflow:
         print('Output underflow: increase blocksize?', file=sys.stderr)
         raise sd.CallbackAbort
@@ -52,7 +52,7 @@ if ports:
 
     volume = 0.1  # range [0.0, 1.0]
     fs = 44100  # sampling rate, Hz, must be integer
-    chunk = 2048  # in samples
+    chunk = 128  # in samples
 
     synthesizers = list()
     is_note_on = list()
