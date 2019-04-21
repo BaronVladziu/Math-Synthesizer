@@ -1,11 +1,11 @@
 # coding=utf-8
 
 import rtmidi
-import queue
-import sys
 import numpy as np
-from synthesizer import Synthesizer
+from synthesizer import Synthesizer, GranularSynthesizer
 import sounddevice as sd
+import matplotlib.pyplot as plt
+import scipy.io.wavfile as wav
 
 
 midiin = rtmidi.RtMidiIn()
@@ -26,24 +26,6 @@ def midi2freq(midi_nr):
     return np.power(2, (midi_nr - ref_midi)/12)*ref_freq
 
 
-def callback(outdata, frames, time, status):
-    if status.output_underflow:
-        print('Output underflow: increase blocksize?', file=sys.stderr)
-        raise sd.CallbackAbort
-    assert not status
-    try:
-        data = q.get_nowait()
-    except queue.Empty:
-        print('Buffer is empty: increase buffersize?', file=sys.stderr)
-        raise sd.CallbackAbort
-    if len(data) < len(outdata):
-        outdata[:len(data)] = data
-        outdata[len(data):] = b'\x00' * (len(outdata) - len(data))
-        raise sd.CallbackStop
-    else:
-        outdata[:] = data
-
-
 ports = range(midiin.getPortCount())
 if ports:
     for i in ports:
@@ -55,32 +37,43 @@ if ports:
     chunk = 128  # in samples
 
     synthesizers = list()
-    is_note_on = list()
-    for i in range(128):
-        synthesizers.append(Synthesizer(midi2freq(i), fs))
-        is_note_on.append(False)
+    for i in range(97):
+        synthesizers.append(GranularSynthesizer(midi2freq(i), fs))
 
     stream = sd.OutputStream(fs, chunk, channels=1)
 
     with stream:
+        nr_synthesized_chunks = 0
+        buf_size_in_chunks = 10000
+        bufor = np.zeros(buf_size_in_chunks * chunk)
         while True:
             m = midiin.getMessage(1)  # some timeout in ms
             if m:
                 print_message(m)
                 if m.isNoteOn():
-                    is_note_on[m.getNoteNumber()] = True
+                    synthesizers[m.getNoteNumber()].start()
                 else:
-                    is_note_on[m.getNoteNumber()] = False
-
-
+                    synthesizers[m.getNoteNumber()].stop()
 
             # generate samples, note conversion to float32 array
             samples = np.zeros(chunk).astype(np.float32)
             for note_nr, syn in enumerate(synthesizers):
-                if is_note_on[note_nr]:
-                    samples += syn.get_chunk(chunk).astype(np.float32)
+                # if note_nr == 96:
+                samples += syn.get_chunk(chunk).astype(np.float32)
+            # for value in samples:
+            #     print("{0:.5f}".format(volume * value))
 
             stream.write(volume * samples)
+            bufor[nr_synthesized_chunks * chunk : (nr_synthesized_chunks+1) * chunk] = volume * samples
+            nr_synthesized_chunks += 1
+
+            # printing
+            if nr_synthesized_chunks == buf_size_in_chunks:
+                nr_synthesized_chunks = 0
+                wav.write('bufor.wav', fs, bufor)
+                plt.plot(bufor)
+                plt.show()
+
 
 else:
     print('NO MIDI INPUT PORTS!')
