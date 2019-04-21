@@ -46,7 +46,7 @@ class GranularSynthesizer:
         # grain
         self.grain_period = self.fs / self.freq
         grain_length_ms = 50
-        grain_sd = 0.001
+        grain_sd = 0.005
         sine_freq = self.freq
 
         grain_len_samples = grain_length_ms / 1000 * self.fs
@@ -67,12 +67,14 @@ class GranularSynthesizer:
     def start(self):
         self.sample_nr = 0
         self.is_active = True
-        self.bufor = np.zeros(self.buf_size)
         self.last_grain_idx = 0.0
         self.fill_bufor()
 
     def stop(self):
         self.is_active = False
+        window = np.linspace(start=1, stop=0, num=self.buf_size)
+        self.bufor *= window
+
 
     def get_chunk(self, chunk_size):
         if self.is_active:
@@ -82,7 +84,12 @@ class GranularSynthesizer:
             self.fill_bufor()
             return result
         else:
-            return np.zeros(chunk_size)
+            result = self.bufor[:chunk_size]
+            self.bufor = np.concatenate([self.bufor[chunk_size:], np.zeros(chunk_size)])
+            if len(result) < chunk_size:
+                return np.concatenate([result, np.zeros(chunk_size - len(result))])
+            else:
+                return result
 
     def fill_bufor(self):
         # print(self.last_grain_idx, self.grain_period, len(self.grain), self.sample_nr, self.buf_size)
