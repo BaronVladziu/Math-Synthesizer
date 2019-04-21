@@ -43,9 +43,9 @@ if ports:
     stream = sd.OutputStream(fs, chunk, channels=1)
 
     with stream:
-        nr_synthesized_chunks = 0
-        buf_size_in_chunks = 10000
-        bufor = np.zeros(buf_size_in_chunks * chunk)
+        # nr_synthesized_chunks = 0
+        # buf_size_in_chunks = 10000
+        # bufor = np.zeros(buf_size_in_chunks * chunk)
         while True:
             m = midiin.getMessage(1)  # some timeout in ms
             if m:
@@ -64,15 +64,15 @@ if ports:
             #     print("{0:.5f}".format(volume * value))
 
             stream.write(volume * samples)
-            bufor[nr_synthesized_chunks * chunk : (nr_synthesized_chunks+1) * chunk] = volume * samples
-            nr_synthesized_chunks += 1
-
-            # printing
-            if nr_synthesized_chunks == buf_size_in_chunks:
-                nr_synthesized_chunks = 0
-                wav.write('bufor.wav', fs, bufor)
-                plt.plot(bufor)
-                plt.show()
+            # bufor[nr_synthesized_chunks * chunk : (nr_synthesized_chunks+1) * chunk] = volume * samples
+            # nr_synthesized_chunks += 1
+            #
+            # # printing
+            # if nr_synthesized_chunks == buf_size_in_chunks:
+            #     nr_synthesized_chunks = 0
+            #     wav.write('bufor.wav', fs, bufor)
+            #     plt.plot(bufor)
+            #     plt.show()
 
 
 else:

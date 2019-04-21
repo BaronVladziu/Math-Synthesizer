@@ -55,14 +55,14 @@ class GranularSynthesizer:
         noise = np.random.normal(0, 1, int(grain_len_samples))
         self.grain = noise * gaussian(samples, grain_len_samples/2, grain_sd*self.fs)
 
-        # plot
-        if self.freq == 440:
-            self.bufor = np.zeros(self.buf_size)
-            self.fill_bufor()
-            plt.plot(self.grain)
-            plt.show()
-            plt.plot(self.bufor)
-            plt.show()
+        # # plot
+        # if self.freq == 440:
+        #     self.bufor = np.zeros(self.buf_size)
+        #     self.fill_bufor()
+        #     plt.plot(self.grain)
+        #     plt.show()
+        #     plt.plot(self.bufor)
+        #     plt.show()
 
     def start(self):
         self.sample_nr = 0
