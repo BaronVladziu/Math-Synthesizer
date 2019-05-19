@@ -32,7 +32,7 @@ if ports:
         print("Port", i, ':', midiin.getPortName(i))
     midiin.openPort(1)
 
-    volume = 0.02  # range [0.0, 1.0]
+    volume = 0.002  # range [0.0, 1.0]
     fs = 44100  # sampling rate, Hz, must be integer
     chunk = 128  # in samples
 
