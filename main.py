@@ -71,13 +71,13 @@ if ports:
     w.set(tk_setters.sustain)
     w.grid(row=3, column=0, columnspan=4)
 
-    w = Scale(tk, from_=0, to=300, label='Decay speed', orient=HORIZONTAL, command=tk_setters.set_volume_decay_speed,
-              length=600, tickinterval=20)
+    w = Scale(tk, from_=0, to=1000, label='Decay speed', orient=HORIZONTAL, command=tk_setters.set_volume_decay_speed,
+              length=600, tickinterval=100)
     w.set(tk_setters.volume_decay_speed)
     w.grid(row=4, column=0, columnspan=4)
 
     w = Scale(tk, from_=0, to=300, label='Spread speed', orient=HORIZONTAL, command=tk_setters.set_spread_speed,
-              length=600, tickinterval=20)
+              length=600, tickinterval=100)
     w.set(tk_setters.spread_speed)
     w.grid(row=5, column=0, columnspan=4)
 
@@ -90,6 +90,21 @@ if ports:
     Radiobutton(tk, text="Backward", variable=spread_direction_var, value=1,
                 command=tk_setters.set_spread_direction_collecting).grid(row=6, column=2)
 
+    w = Scale(tk, from_=0, to=2400, label='Detuning start', orient=HORIZONTAL, command=tk_setters.set_detuning_start,
+              length=600, tickinterval=500)
+    w.set(tk_setters.detuning_start)
+    w.grid(row=7, column=0, columnspan=4)
+
+    w = Scale(tk, from_=0, to=2400, label='Detuning end', orient=HORIZONTAL, command=tk_setters.set_detuning_end,
+              length=600, tickinterval=500)
+    w.set(tk_setters.detuning_end)
+    w.grid(row=8, column=0, columnspan=4)
+
+    w = Scale(tk, from_=0, to=1000, label='Detuning speed', orient=HORIZONTAL, command=tk_setters.set_detuning_speed,
+              length=600, tickinterval=200)
+    w.set(tk_setters.detuning_start)
+    w.grid(row=9, column=0, columnspan=4)
+
     with stream:
         # nr_synthesized_chunks = 0
         # buf_size_in_chunks = 10000
@@ -97,7 +112,7 @@ if ports:
         while True:
             m = midiin.getMessage(1)  # some timeout in ms
             if m:
-                print_message(m)
+                # print_message(m)
                 if m.isNoteOn():
                     synthesizers[m.getNoteNumber()].start()
                 else:

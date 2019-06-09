@@ -46,7 +46,7 @@ class GranularSynthesizer:
         self.grains = None
         self.reload_grains()
 
-        self.mistuning_module = MistuningModule(self.fs, tk_setters)
+        self.detuning_module = DetuningModule(self.fs, tk_setters)
         self.appearing_module = AppearingModule(self.fs, tk_setters)
         self.volume_module = VolumeModule(self.fs, tk_setters)
 
@@ -70,7 +70,7 @@ class GranularSynthesizer:
         for grain in self.grains:
             grain.start()
 
-        self.mistuning_module.start()
+        self.detuning_module.start()
 
         self.fill_bufor()
 
@@ -90,10 +90,10 @@ class GranularSynthesizer:
         return result
 
     def fill_bufor(self):
-        self.mistuning_module.update(self.sample_nr)
+        self.detuning_module.update(self.sample_nr)
         self.appearing_module.update(self.sample_nr)
         self.volume_module.update(self.sample_nr)
 
         for grain in self.grains:
             grain.fill_bufor(self.bufor, self.sample_nr, self.freq,
-                             self.appearing_module, self.mistuning_module, self.volume_module)
+                             self.appearing_module, self.detuning_module, self.volume_module)

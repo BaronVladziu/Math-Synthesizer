@@ -35,12 +35,12 @@ class Grain:
         self.last_grain_idx = 0.0
         self.period = 0.0
 
-    def update(self, freq, mistuning_module=None):
+    def update(self, freq, detuning_module=None):
         self.last_grain_idx += self.period
         self.period = self.fs / freq
-        if mistuning_module is not None:
-            self.period *= cents2ratio(random.uniform(-mistuning_module.act_mistuning,
-                                                      mistuning_module.act_mistuning))
+        if detuning_module is not None:
+            self.period *= cents2ratio(random.uniform(-detuning_module.act_detuning,
+                                                      detuning_module.act_detuning))
 
     def fill_bufor(self, bufor, sample_nr, freq,
                    appearing_module=None, mistuning_module=None, volume_module=None):
@@ -52,23 +52,32 @@ class Grain:
             self.update(freq, mistuning_module)
 
 
-class MistuningModule:
+class DetuningModule:
 
     def __init__(self, fs, tk_setters):
         self.fs = fs
 
-        self.start_mistuning = 1200  # cents
-        self.end_mistuning = 1  # cents
-        self.tuning_speed = 100
+        self.detuning_start = tk_setters.detuning_start  # cents
+        self.detuning_end = tk_setters.detuning_end  # cents
+        self.detuning_speed = tk_setters.detuning_speed
 
-        self.act_mistuning = self.start_mistuning
+        self.act_detuning = self.detuning_start
 
     def start(self):
-        self.act_mistuning = self.start_mistuning
+        self.act_detuning = self.detuning_start
 
     def update(self, sample_nr):
-        if self.act_mistuning > self.end_mistuning:
-            self.act_mistuning = self.start_mistuning*np.power(0.01, sample_nr/self.fs*self.tuning_speed)
+        if self.detuning_start > self.detuning_end:
+            if self.act_detuning > self.detuning_end:
+                self.act_detuning = self.detuning_start*np.power(0.01, sample_nr/self.fs*self.detuning_speed)
+            else:
+                self.act_detuning = self.detuning_end
+        else:
+            if self.act_detuning < self.detuning_end:
+                self.act_detuning = (self.detuning_start + self.detuning_end) * (1 - np.power(0.01, sample_nr/self.fs*self.detuning_speed))
+            else:
+                self.act_detuning = self.detuning_end
+
 
 
 class AppearingModule:
@@ -76,7 +85,7 @@ class AppearingModule:
     def __init__(self, fs, tk_setters):
         self.fs = fs
 
-        self.appearing_speed = tk_setters.spread_speed
+        self.appearing_speed = tk_setters.spread_speed/30
         self.direction = tk_setters.spread_direction
 
         self.appearing_prob = 1
@@ -93,7 +102,7 @@ class VolumeModule:
     def __init__(self, fs, tk_setters):
         self.fs = fs
 
-        self.decay_speed = tk_setters.volume_decay_speed
+        self.decay_speed = tk_setters.volume_decay_speed/10
         self.sustain = tk_setters.sustain/100
 
         self.volume = 1.0

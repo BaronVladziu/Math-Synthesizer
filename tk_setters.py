@@ -8,8 +8,8 @@ class TkSetters:
         self.grain_len = 10
         self.grain_sd = 0.001
         self.sustain = 20
-        self.volume_decay_speed = 1.0
-        self.spread_speed = 0.3
+        self.volume_decay_speed = 10
+        self.spread_speed = 3
         self.spread_direction = 1
         self.detuning_start = 1200
         self.detuning_end = 1
@@ -41,12 +41,12 @@ class TkSetters:
     def set_volume_decay_speed(self, val):
         self.volume_decay_speed = int(val)
         for syn in self.sythesizers:
-            syn.volume_module.decay_speed = self.volume_decay_speed
+            syn.volume_module.decay_speed = self.volume_decay_speed/10
 
     def set_spread_speed(self, val):
         self.spread_speed = int(val)
         for syn in self.sythesizers:
-            syn.appearing_module.appearing_speed = self.spread_speed
+            syn.appearing_module.appearing_speed = self.spread_speed/30
 
     def set_spread_direction_dispersing(self):
         self.spread_direction = 1
@@ -57,4 +57,21 @@ class TkSetters:
         self.spread_direction = -1
         for syn in self.sythesizers:
             syn.appearing_module.direction = self.spread_direction
+
+    def set_detuning_start(self, val):
+        self.detuning_start = int(val)
+        for syn in self.sythesizers:
+            syn.detuning_module.detuning_start = self.detuning_start
+
+    def set_detuning_end(self, val):
+        self.detuning_end = int(val)
+        for syn in self.sythesizers:
+            syn.detuning_module.detuning_end = self.detuning_end
+
+    def set_detuning_speed(self, val):
+        self.detuning_speed = int(val)
+        for syn in self.sythesizers:
+            syn.detuning_module.detuning_speed = self.detuning_speed
+
+
 
