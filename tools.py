@@ -15,22 +15,21 @@ def cents2ratio(x):
 
 class Grain:
 
-    def __init__(self, fs):
+    def __init__(self, fs, length_ms, sd):
         self.fs = fs
         self.last_grain_idx = 0.0
         self.period = 0.0
 
-        length_ms = 10
-        sd = 0.002
-        # sine_freq = 1000
+        sine_freq = 1000
 
         len_samples = length_ms / 1000 * self.fs
         samples = np.arange(start=0, stop=len_samples)
 
-        # sine = np.sin(2 * np.pi * sine_freq / self.fs * samples)
-        noise = np.random.normal(0, 1, int(len_samples))
+        # signal = np.sin(2 * np.pi * sine_freq / self.fs * samples)
+        signal = np.random.normal(0, 1, int(len_samples))
 
-        self.grain = noise * gaussian(samples, len_samples/2, sd*self.fs)
+        self.grain = signal * gaussian(samples, len_samples/2, sd*self.fs)
+        # self.grain = signal
 
     def start(self):
         self.last_grain_idx = 0.0
@@ -55,12 +54,12 @@ class Grain:
 
 class MistuningModule:
 
-    def __init__(self, fs):
+    def __init__(self, fs, tk_setters):
         self.fs = fs
 
         self.start_mistuning = 1200  # cents
         self.end_mistuning = 1  # cents
-        self.tuning_speed = 3
+        self.tuning_speed = 100
 
         self.act_mistuning = self.start_mistuning
 
@@ -74,25 +73,32 @@ class MistuningModule:
 
 class AppearingModule:
 
-    def __init__(self, fs):
+    def __init__(self, fs, tk_setters):
         self.fs = fs
 
-        self.appearing_speed = 100
+        self.appearing_speed = tk_setters.spread_speed
+        self.direction = tk_setters.spread_direction
+
         self.appearing_prob = 1
 
     def update(self, sample_nr):
-        self.appearing_prob = 1 - np.power(0.01, sample_nr / self.fs * self.appearing_speed)
+        if self.direction == 1:
+            self.appearing_prob = np.power(0.01, sample_nr / self.fs * self.appearing_speed)
+        else:
+            self.appearing_prob = 1 - np.power(0.01, sample_nr / self.fs * self.appearing_speed)
 
 
 class VolumeModule:
 
-    def __init__(self, fs):
+    def __init__(self, fs, tk_setters):
         self.fs = fs
 
-        self.decay_speed = 1
+        self.decay_speed = tk_setters.volume_decay_speed
+        self.sustain = tk_setters.sustain/100
+
         self.volume = 1.0
 
     def update(self, sample_nr):
-        self.volume = 0.5 + 0.5*np.power(0.01, sample_nr / self.fs * self.decay_speed)
+        self.volume = self.sustain + (1 - self.sustain)*np.power(0.01, sample_nr / self.fs * self.decay_speed)
 
 

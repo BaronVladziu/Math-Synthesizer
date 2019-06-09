@@ -33,35 +33,42 @@ class Synthesizer:
 
 class GranularSynthesizer:
 
-    def __init__(self, freq, fs):
+    def __init__(self, freq, fs, tk_setters):
         self.freq = freq
         self.fs = fs
         self.sample_nr = 0
         self.is_active = False
-        self.bufor = np.zeros(4410)
+        self.bufor = np.zeros(2205)
 
-        self.grain1 = Grain(self.fs)
-        self.grain2 = Grain(self.fs)
-        self.grain3 = Grain(self.fs)
-        self.mistuning_module = MistuningModule(self.fs)
-        self.appearing_module = AppearingModule(self.fs)
-        self.volume_module = VolumeModule(self.fs)
+        self.grain_nr = tk_setters.voices
+        self.grain_len = tk_setters.grain_len
+        self.grain_sd = 0.001
+        self.grains = None
+        self.reload_grains()
+
+        self.mistuning_module = MistuningModule(self.fs, tk_setters)
+        self.appearing_module = AppearingModule(self.fs, tk_setters)
+        self.volume_module = VolumeModule(self.fs, tk_setters)
 
         # # plot
-        # if self.freq == 220:
+        # if self.freq == 110:
         #     self.bufor = np.zeros(len(self.bufor))
         #     self.fill_bufor()
-        #     plt.plot(self.grain1.grain)
+        #     plt.plot(self.grains[0].grain)
         #     plt.show()
         #     plt.plot(self.bufor)
         #     plt.show()
 
+    def reload_grains(self):
+        self.grains = list()
+        for i in range(self.grain_nr):
+            self.grains.append(Grain(self.fs, self.grain_len, self.grain_sd))
+
     def start(self):
         self.sample_nr = 0
         self.is_active = True
-        self.grain1.start()
-        self.grain2.start()
-        self.grain3.start()
+        for grain in self.grains:
+            grain.start()
 
         self.mistuning_module.start()
 
@@ -87,9 +94,6 @@ class GranularSynthesizer:
         self.appearing_module.update(self.sample_nr)
         self.volume_module.update(self.sample_nr)
 
-        self.grain1.fill_bufor(self.bufor, self.sample_nr, self.freq,
-                               self.appearing_module, self.mistuning_module, self.volume_module)
-        self.grain2.fill_bufor(self.bufor, self.sample_nr, self.freq,
-                               self.appearing_module, self.mistuning_module, self.volume_module)
-        self.grain3.fill_bufor(self.bufor, self.sample_nr, self.freq,
-                               self.appearing_module, self.mistuning_module, self.volume_module)
+        for grain in self.grains:
+            grain.fill_bufor(self.bufor, self.sample_nr, self.freq,
+                             self.appearing_module, self.mistuning_module, self.volume_module)
