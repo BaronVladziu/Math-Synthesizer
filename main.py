@@ -15,7 +15,7 @@ def print_message(midi):
     if midi.isNoteOn():
         print('ON: ', midi.getNoteNumber(), midi2freq(midi.getNoteNumber()), midi.getVelocity())
     elif midi.isNoteOff():
-        print('OFF:', midi.getNoteNumber())
+        print('OFF:', midi.getNoteNumber(), midi2freq(midi.getNoteNumber()), midi.getVelocity())
     elif midi.isController():
         print('CONTROLLER', midi.getControllerNumber(), midi.getControllerValue())
 
