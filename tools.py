@@ -15,21 +15,21 @@ def cents2ratio(x):
 
 class Grain:
 
-    def __init__(self, fs, length_ms, sd):
+    def __init__(self, fs, length_ms, sd, sine_freq):
         self.fs = fs
         self.last_grain_idx = 0.0
         self.period = 0.0
 
-        sine_freq = 1000
-
         len_samples = length_ms / 1000 * self.fs
         samples = np.arange(start=0, stop=len_samples)
 
-        # signal = np.sin(2 * np.pi * sine_freq / self.fs * samples)
-        signal = np.random.normal(0, 1, int(len_samples))
+        self.sine_freq = sine_freq
+        if self.sine_freq == 0:
+            signal = np.random.normal(0, 1, int(len_samples))
+        else:
+            signal = np.sin(2 * np.pi * self.sine_freq / self.fs * samples)
 
         self.grain = signal * gaussian(samples, len_samples/2, sd*self.fs)
-        # self.grain = signal
 
     def start(self):
         self.last_grain_idx = 0.0

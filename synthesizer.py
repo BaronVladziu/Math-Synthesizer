@@ -43,6 +43,7 @@ class GranularSynthesizer:
         self.grain_nr = tk_setters.voices
         self.grain_len = tk_setters.grain_len
         self.grain_sd = 0.001
+        self.sine_freq = 0
         self.grains = None
         self.reload_grains()
 
@@ -62,7 +63,7 @@ class GranularSynthesizer:
     def reload_grains(self):
         self.grains = list()
         for i in range(self.grain_nr):
-            self.grains.append(Grain(self.fs, self.grain_len, self.grain_sd))
+            self.grains.append(Grain(self.fs, self.grain_len, self.grain_sd, self.sine_freq))
 
     def start(self):
         self.sample_nr = 0

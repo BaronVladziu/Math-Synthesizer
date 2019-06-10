@@ -1,12 +1,15 @@
 # coding=utf-8
 
+
 class TkSetters:
 
     def __init__(self, sythesizers):
         self.sythesizers = sythesizers
+        self.volume = 0.003
         self.voices = 3
         self.grain_len = 10
         self.grain_sd = 0.001
+        self.sine_freq = 0
         self.sustain = 20
         self.volume_decay_speed = 10
         self.spread_speed = 3
@@ -14,6 +17,9 @@ class TkSetters:
         self.detuning_start = 1200
         self.detuning_end = 1
         self.detuning_speed = 300
+
+    def set_volume(self, val):
+        self.volume = int(val)/10000
 
     def set_voices(self, val):
         self.voices = int(val)
@@ -31,6 +37,12 @@ class TkSetters:
         self.grain_sd = int(val)
         for syn in self.sythesizers:
             syn.grain_sd = self.grain_sd
+            syn.reload_grains()
+
+    def set_sine_freq(self, val):
+        self.sine_freq = int(val)
+        for syn in self.sythesizers:
+            syn.sine_freq = self.sine_freq
             syn.reload_grains()
 
     def set_sustain(self, val):
